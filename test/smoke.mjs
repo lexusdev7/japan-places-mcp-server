@@ -1,3 +1,8 @@
+// Live smoke test for the generated Japan Places MCP server (v2).
+// Spawns src/index.js over stdio and exercises every tool against the
+// real API: free tools must return data, paid tools must return the
+// clean labelled PAID_DATASET 402 error, and required-argument
+// validation must fire client-side.
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -5,67 +10,168 @@ import path from "node:path";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const entry = path.join(here, "..", "src", "index.js");
 
-let bad = 0;
+const EXPECTED_TOOLS = [
+  "jp_municipality",
+  "jp_quality",
+  "jp_catchment",
+  "jp_chains",
+  "jp_aliveness",
+  "jp_density",
+  "jp_land_price",
+  "jp_energy_price",
+  "jp_subsidy_award_rate",
+  "jp_jma_weather",
+  "jp_boj_statistics",
+  "jp_tourism_signal",
+  "jp_crime_statistics",
+  "jp_facility_signal",
+  "jp_health",
+  "jp_catalog",
+  "jp_history_diff",
+];
 
+let bad = 0;
 function check(name, ok, detail = "") {
   if (!ok) bad++;
   console.log(`${ok ? "PASS" : "FAIL"} ${name}${detail ? "  " + detail : ""}`);
 }
 
 const child = spawn("node", [entry], { stdio: ["pipe", "pipe", "pipe"] });
+let buf = "";
+const pending = new Map();
+child.stdout.on("data", (d) => {
+  buf += d.toString();
+  let nl;
+  while ((nl = buf.indexOf("\n")) !== -1) {
+    const line = buf.slice(0, nl).trim();
+    buf = buf.slice(nl + 1);
+    if (!line) continue;
+    let msg;
+    try {
+      msg = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    if (msg.id !== undefined && pending.has(msg.id)) {
+      pending.get(msg.id)(msg);
+      pending.delete(msg.id);
+    }
+  }
+});
+child.stderr.on("data", (d) => process.stderr.write(d));
 
-let out = "";
-let errOut = "";
-child.stdout.on("data", (d) => { out += d.toString(); });
-child.stderr.on("data", (d) => { errOut += d.toString(); });
-
-function send(msg) {
-  child.stdin.write(JSON.stringify(msg) + "\n");
+let nextId = 1;
+function rpc(method, params) {
+  const id = nextId++;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("timeout waiting for id " + id)), 60000);
+    pending.set(id, (msg) => {
+      clearTimeout(timer);
+      resolve(msg);
+    });
+    child.stdin.write(JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n");
+  });
 }
 
-async function wait(ms) {
-  return new Promise((r) => setTimeout(r, ms));
+async function callTool(name, args) {
+  const res = await rpc("tools/call", { name, arguments: args });
+  return res.result;
+}
+
+function textOf(result) {
+  return result && result.content && result.content[0] ? result.content[0].text : "";
 }
 
 try {
-  await wait(1500);
-  check("server starts", child.exitCode === null, child.exitCode !== null ? "exited " + child.exitCode : "");
+  const init = await rpc("initialize", { protocolVersion: "2024-11-05", capabilities: {} });
+  check("initialize serverInfo", Boolean(init.result && init.result.serverInfo));
+  check(
+    "server version is 2.0.0",
+    init.result.serverInfo.version === "2.0.0",
+    "version=" + (init.result.serverInfo && init.result.serverInfo.version)
+  );
 
-  send({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2024-11-05", capabilities: {} } });
-  await wait(500);
-  send({ jsonrpc: "2.0", id: 2, method: "tools/list" });
-  await wait(1000);
-  send({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "japan_places_health", arguments: {} } });
-  await wait(1500);
+  const list = await rpc("tools/list");
+  const names = list.result.tools.map((t) => t.name);
+  check("tools/list has 17 tools", names.length === 17, names.join(", "));
+  check(
+    "tools/list matches expected set and order",
+    JSON.stringify(names) === JSON.stringify(EXPECTED_TOOLS)
+  );
+  const paidLabelled = list.result.tools.filter((t) => t.description.includes("[Paid:"));
+  const freeLabelled = list.result.tools.filter((t) => t.description.includes("[Free]"));
+  check("13 paid tools labelled", paidLabelled.length === 13, String(paidLabelled.length));
+  check("4 free tools labelled", freeLabelled.length === 4, String(freeLabelled.length));
+  const muni = list.result.tools.find((t) => t.name === "jp_municipality");
+  check(
+    "jp_municipality requires prefecture",
+    JSON.stringify(muni.inputSchema.required) === JSON.stringify(["prefecture"])
+  );
 
-  const lines = out.split("\n").filter((l) => l.trim());
-  const messages = lines.map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+  // Free tools must return data.
+  const health = await callTool("jp_health", {});
+  const healthJson = JSON.parse(textOf(health));
+  check("jp_health returns status ok", healthJson.status === "ok", "status=" + healthJson.status);
 
-  check("initialize response", messages.some((m) => m.id === 1 && m.result && m.result.serverInfo));
+  const catalog = await callTool("jp_catalog", {});
+  const catalogJson = JSON.parse(textOf(catalog));
+  check(
+    "jp_catalog returns datasets",
+    Array.isArray(catalogJson.datasets) && catalogJson.datasets.length >= 14,
+    "datasets=" + (catalogJson.datasets || []).length
+  );
 
-  const toolList = messages.find((m) => m.id === 2);
-  const toolNames = toolList && toolList.result ? toolList.result.tools.map((t) => t.name) : [];
-  check("tools/list has 4 tools", toolNames.length === 4, toolNames.join(", "));
-  check("tools/list has poi", toolNames.includes("japan_places_poi"));
-  check("tools/list has subsidies", toolNames.includes("japan_places_subsidies"));
-  check("tools/list has jepx", toolNames.includes("japan_places_jepx"));
-  check("tools/list has health", toolNames.includes("japan_places_health"));
+  const muniRes = await callTool("jp_municipality", { prefecture: "13" });
+  const muniJson = JSON.parse(textOf(muniRes));
+  check(
+    "jp_municipality returns census data",
+    Boolean(muniJson.dataset) && Array.isArray(muniJson.municipalities),
+    "dataset=" + muniJson.dataset
+  );
 
-  const healthCall = messages.find((m) => m.id === 3);
-  const healthOk = healthCall && healthCall.result && healthCall.result.content;
-  check("health tool returns data", Boolean(healthOk));
-  if (healthOk) {
-    const text = healthCall.result.content[0].text;
-    const parsed = JSON.parse(text);
-    check("health reports status ok", parsed.status === "ok", "status=" + parsed.status);
-    check("health reports assets binding", parsed.assets_binding === true);
+  const quality = await callTool("jp_quality", {});
+  const qualityJson = JSON.parse(textOf(quality));
+  check("jp_quality returns distribution", typeof qualityJson.mean === "number", "mean=" + qualityJson.mean);
+
+  // Client-side required-argument validation.
+  const noArg = await callTool("jp_municipality", {});
+  check(
+    "jp_municipality without prefecture is a clean error",
+    noArg.isError === true && textOf(noArg).includes("prefecture"),
+    textOf(noArg).slice(0, 80)
+  );
+
+  // Paid tools must return the clean labelled 402 error.
+  const paidCalls = [
+    ["jp_catchment", {}],
+    ["jp_chains", {}],
+    ["jp_aliveness", {}],
+    ["jp_density", {}],
+    ["jp_land_price", { prefecture_code: "13000" }],
+    ["jp_energy_price", { area: "tokyo" }],
+    ["jp_subsidy_award_rate", { industry: "manufacturing", prefecture: "13" }],
+    ["jp_jma_weather", { prefecture: "13" }],
+    ["jp_boj_statistics", { series: "FM08" }],
+    ["jp_tourism_signal", { prefecture: "13" }],
+    ["jp_crime_statistics", { prefecture: "13" }],
+    ["jp_facility_signal", { prefecture: "13" }],
+    ["jp_history_diff", { dataset: "energy_price", since: "2026-11-01" }],
+  ];
+  for (const [name, args] of paidCalls) {
+    const res = await callTool(name, args);
+    const text = textOf(res);
+    check(
+      name + " returns labelled PAID_DATASET 402",
+      res.isError === true && text.startsWith("PAID_DATASET:") && text.includes("HTTP 402"),
+      text.slice(0, 100)
+    );
   }
 
   console.log("SMOKE bad=" + bad);
   child.kill();
   process.exit(bad ? 1 : 0);
 } catch (err) {
-  console.log("FAIL exception: " + String(err).slice(0, 200));
+  console.log("FAIL exception: " + String(err).slice(0, 300));
   child.kill();
   process.exit(1);
 }

@@ -1,0 +1,7 @@
+{
+  "spec_source": "LIVE https://japan-places.local-connect-design.trade/api/v1/openapi (fetched 2026-11-09); canon tools from koteihi-lab functions/mcp-tools.json",
+  "captured_at": "2026-11-09",
+  "catalog_hash": "eac7775e1c754164",
+  "repo_spec_catalog_hash": "09565b4818ec30b1",
+  "divergence_note": "Live spec has 18 paths (adds /diff/{dataset}) and catalog hash eac7775e1c754164; the japan-places repo spec (api/openapi.json, commit 833cd0609) has 17 paths and hash 09565b4818ec30b1. This package follows LIVE as ground truth for paths."
+}
