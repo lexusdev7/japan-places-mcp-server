@@ -1,7 +1,7 @@
 {
   "name": "mcp-japan-places",
-  "version": "2.0.0",
-  "description": "MCP server for the Japan Places API: municipality census for 1,917 municipalities, POI category counts for all 47 prefectures, station catchments (60-station sample), and 13 live signals.",
+  "version": "2.1.0",
+  "description": "MCP server for the Japan Places API: the same 16 tools as the hosted MCP - municipality census, POI category counts for all 47 prefectures, station catchments, and 14 paid signals incl. grant deadlines and gBizINFO search.",
   "author": "Lexus",
   "license": "CDLA-Permissive-2.0 AND Apache-2.0",
   "type": "module",

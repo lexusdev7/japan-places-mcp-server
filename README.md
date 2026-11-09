@@ -24,7 +24,8 @@ keys and no payment credentials.
 
 ## Tools
 
-17 tools: one per dataset, plus health and the dataset catalogue.
+16 tools: the same set as the hosted MCP (the canon in
+`functions/mcp-tools.json`) — one per dataset.
 Free tools return data directly. Paid tools are gated by the API with
 HTTP 402 (x402 micropayments in USDC on Base, or a RapidAPI Premium Datasets
 plan on PRO/ULTRA/MEGA); without payment a paid tool returns a clean,
@@ -39,17 +40,16 @@ this server cannot pay on your behalf.
 | `jp_chains` | `GET /api/v1/poi/chains` | Paid, US$0.03/call |
 | `jp_aliveness` | `GET /api/v1/poi/aliveness` | Paid, US$0.02/call |
 | `jp_density` | `GET /api/v1/poi/density` | Paid, US$0.05/call |
-| `jp_land_price` | `GET /api/v1/poi/land/price` | Paid, US$0.05/call |
 | `jp_energy_price` | `GET /api/v1/signals/energy/price` | Paid, US$0.05/call |
+| `jp_land_price` | `GET /api/v1/poi/land/price` | Paid, US$0.05/call |
 | `jp_subsidy_award_rate` | `GET /api/v1/signals/subsidy/award-rate` | Paid, US$0.05/call |
+| `jp_grant_deadline_alert` | `GET /api/v1/signals/grant/deadline` | Paid, US$0.04/call |
+| `jp_gbizinfo_search` | `GET /api/v1/signals/gbizinfo` | Paid, US$0.03/call |
 | `jp_jma_weather` | `GET /api/v1/signals/jma/weather` | Paid, US$0.02/call |
 | `jp_boj_statistics` | `GET /api/v1/signals/boj/statistics` | Paid, US$0.03/call |
 | `jp_tourism_signal` | `GET /api/v1/signals/tourism` | Paid, US$0.02/call |
 | `jp_crime_statistics` | `GET /api/v1/signals/crime` | Paid, US$0.02/call |
 | `jp_facility_signal` | `GET /api/v1/signals/facility` | Paid, US$0.03/call |
-| `jp_health` | `GET /api/v1/health` | Free |
-| `jp_catalog` | `GET /api/v1/poi` | Free |
-| `jp_history_diff` | `GET /api/v1/diff/{dataset}` | Paid, 402-gated (price in the API 402 response) |
 
 Notes:
 
@@ -57,8 +57,10 @@ Notes:
   2-digit JIS X 0401 code such as `13`); the API answers 400 without it.
 - `jp_catchment` currently covers a sample of 60 major stations
   (a full-station rollout is planned), per the API's own disclosure.
-- `jp_history_diff` compares daily snapshots of a live dataset and returns
-  added / removed / changed since a given date.
+- Changed in 2.1.0 (JP-16 canon resync): `jp_health`, `jp_catalog` and
+  `jp_history_diff` were removed so this package carries exactly the
+  hosted MCP's 16-tool set. `/health`, `/poi` and `/diff/{dataset}`
+  remain available over REST.
 
 ## Generated code — do not edit by hand
 

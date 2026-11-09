@@ -1,1 +1,47 @@
-{"catalog_hash":"eac7775e1c754164","generated_at":"2026-11-09","package_version":"2.0.0","paths_covered":["/diff/{dataset}","/health","/openapi","/poi","/poi/aliveness","/poi/catchment","/poi/chains","/poi/density","/poi/land/price","/poi/municipality","/poi/quality","/signals/boj/statistics","/signals/crime","/signals/energy/price","/signals/facility","/signals/jma/weather","/signals/subsidy/award-rate","/signals/tourism"],"spec_source":"LIVE https://japan-places.local-connect-design.trade/api/v1/openapi (fetched 2026-11-09); canon tools from koteihi-lab functions/mcp-tools.json","tool_count":17,"tools":["jp_municipality","jp_quality","jp_catchment","jp_chains","jp_aliveness","jp_density","jp_land_price","jp_energy_price","jp_subsidy_award_rate","jp_jma_weather","jp_boj_statistics","jp_tourism_signal","jp_crime_statistics","jp_facility_signal","jp_health","jp_catalog","jp_history_diff"]}
+{
+  "spec_source": "LIVE https://japan-places.local-connect-design.trade/api/v1/openapi (fetched 2026-11-09, JP-16 resync); canon tools from koteihi-lab origin/main functions/mcp-tools.json (16 tools, byte-identical to the hosted /functions/mcp-tools.json)",
+  "catalog_hash": "dfd86f59fbe1879c",
+  "generated_at": "2026-11-09",
+  "tool_count": 16,
+  "package_version": "2.1.0",
+  "paths_covered": [
+    "/diff/{dataset}",
+    "/health",
+    "/openapi",
+    "/poi",
+    "/poi/aliveness",
+    "/poi/catchment",
+    "/poi/chains",
+    "/poi/density",
+    "/poi/land/price",
+    "/poi/municipality",
+    "/poi/quality",
+    "/signals/boj/statistics",
+    "/signals/crime",
+    "/signals/energy/price",
+    "/signals/facility",
+    "/signals/gbizinfo",
+    "/signals/grant/deadline",
+    "/signals/jma/weather",
+    "/signals/subsidy/award-rate",
+    "/signals/tourism"
+  ],
+  "tools": [
+    "jp_municipality",
+    "jp_quality",
+    "jp_catchment",
+    "jp_chains",
+    "jp_aliveness",
+    "jp_density",
+    "jp_energy_price",
+    "jp_land_price",
+    "jp_subsidy_award_rate",
+    "jp_grant_deadline_alert",
+    "jp_gbizinfo_search",
+    "jp_jma_weather",
+    "jp_boj_statistics",
+    "jp_tourism_signal",
+    "jp_crime_statistics",
+    "jp_facility_signal"
+  ]
+}

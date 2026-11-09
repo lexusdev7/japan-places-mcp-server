@@ -17,17 +17,16 @@ const EXPECTED_TOOLS = [
   "jp_chains",
   "jp_aliveness",
   "jp_density",
-  "jp_land_price",
   "jp_energy_price",
+  "jp_land_price",
   "jp_subsidy_award_rate",
+  "jp_grant_deadline_alert",
+  "jp_gbizinfo_search",
   "jp_jma_weather",
   "jp_boj_statistics",
   "jp_tourism_signal",
   "jp_crime_statistics",
   "jp_facility_signal",
-  "jp_health",
-  "jp_catalog",
-  "jp_history_diff",
 ];
 
 let bad = 0;
@@ -86,40 +85,34 @@ try {
   const init = await rpc("initialize", { protocolVersion: "2024-11-05", capabilities: {} });
   check("initialize serverInfo", Boolean(init.result && init.result.serverInfo));
   check(
-    "server version is 2.0.0",
-    init.result.serverInfo.version === "2.0.0",
+    "server version is 2.1.0",
+    init.result.serverInfo.version === "2.1.0",
     "version=" + (init.result.serverInfo && init.result.serverInfo.version)
   );
 
   const list = await rpc("tools/list");
   const names = list.result.tools.map((t) => t.name);
-  check("tools/list has 17 tools", names.length === 17, names.join(", "));
+  check("tools/list has 16 tools", names.length === 16, names.join(", "));
   check(
     "tools/list matches expected set and order",
     JSON.stringify(names) === JSON.stringify(EXPECTED_TOOLS)
   );
   const paidLabelled = list.result.tools.filter((t) => t.description.includes("[Paid:"));
   const freeLabelled = list.result.tools.filter((t) => t.description.includes("[Free]"));
-  check("13 paid tools labelled", paidLabelled.length === 13, String(paidLabelled.length));
-  check("4 free tools labelled", freeLabelled.length === 4, String(freeLabelled.length));
+  check("14 paid tools labelled", paidLabelled.length === 14, String(paidLabelled.length));
+  check("2 free tools labelled", freeLabelled.length === 2, String(freeLabelled.length));
   const muni = list.result.tools.find((t) => t.name === "jp_municipality");
   check(
     "jp_municipality requires prefecture",
     JSON.stringify(muni.inputSchema.required) === JSON.stringify(["prefecture"])
   );
 
-  // Free tools must return data.
-  const health = await callTool("jp_health", {});
-  const healthJson = JSON.parse(textOf(health));
-  check("jp_health returns status ok", healthJson.status === "ok", "status=" + healthJson.status);
-
-  const catalog = await callTool("jp_catalog", {});
-  const catalogJson = JSON.parse(textOf(catalog));
-  check(
-    "jp_catalog returns datasets",
-    Array.isArray(catalogJson.datasets) && catalogJson.datasets.length >= 14,
-    "datasets=" + (catalogJson.datasets || []).length
-  );
+  // Free tools must return data. (jp_health / jp_catalog were removed in
+  // 2.1.0 for canon parity with the hosted MCP - health is a REST endpoint,
+  // not an MCP tool.)
+  const healthRes = await fetch("https://japan-places.local-connect-design.trade/api/v1/health");
+  const healthJson = await healthRes.json();
+  check("REST /health returns status ok", healthJson.status === "ok", "status=" + healthJson.status);
 
   const muniRes = await callTool("jp_municipality", { prefecture: "13" });
   const muniJson = JSON.parse(textOf(muniRes));
@@ -150,12 +143,13 @@ try {
     ["jp_land_price", { prefecture_code: "13000" }],
     ["jp_energy_price", { area: "tokyo" }],
     ["jp_subsidy_award_rate", { industry: "manufacturing", prefecture: "13" }],
+    ["jp_grant_deadline_alert", { industry: "manufacturing" }],
+    ["jp_gbizinfo_search", { q: "test" }],
     ["jp_jma_weather", { prefecture: "13" }],
     ["jp_boj_statistics", { series: "FM08" }],
     ["jp_tourism_signal", { prefecture: "13" }],
     ["jp_crime_statistics", { prefecture: "13" }],
     ["jp_facility_signal", { prefecture: "13" }],
-    ["jp_history_diff", { dataset: "energy_price", since: "2026-11-01" }],
   ];
   for (const [name, args] of paidCalls) {
     const res = await callTool(name, args);

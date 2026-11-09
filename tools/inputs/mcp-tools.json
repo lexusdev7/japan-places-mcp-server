@@ -105,7 +105,7 @@
     },
     {
       "name": "jp_density",
-      "description": "都道府県×カテゴリの POI 密度",
+      "description": "都道府県×カテゴリのPOI密度",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -196,6 +196,65 @@
       }
     },
     {
+      "name": "jp_grant_deadline_alert",
+      "description": "補助金締切・要件アラート",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "industry": {
+            "type": "string"
+          },
+          "prefecture": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "string"
+          }
+        },
+        "required": []
+      },
+      "provenance": {
+        "source_url": "https://api.jgrants-portal.go.jp/",
+        "license": "CC-BY-4.0",
+        "fetched_at": "2026-10-27",
+        "source_total": 3847,
+        "collected_total": 3847,
+        "content_hash": "5bc82bda922a9dce",
+        "counts_basis": "derived full index from signals/subsidy_award_rate.json (3847 rows == 3847 rows)"
+      }
+    },
+    {
+      "name": "jp_gbizinfo_search",
+      "description": "gBizINFO法人登録データスナップショット（26,249法人）の検索",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string"
+          },
+          "prefecture": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "string"
+          }
+        },
+        "required": []
+      },
+      "provenance": {
+        "source_url": "https://info.gbiz.go.jp/",
+        "license": "CC BY 4.0",
+        "fetched_at": "2026-11-04T10:29:47Z",
+        "source_total": 26249,
+        "collected_total": 26249,
+        "content_hash": "947231890fe48861",
+        "counts_basis": "snapshot cohort collected 2026-11-04T10:29:47Z: 26249 rows == count (a gBizINFO snapshot, NOT the full directory)"
+      }
+    },
+    {
       "name": "jp_jma_weather",
       "description": "気象庁・気温・降水量・日照時間の都道府県別シグナル",
       "inputSchema": {
@@ -283,7 +342,7 @@
     },
     {
       "name": "jp_facility_signal",
-      "description": "OpenPOI 公共施設カテゴリ POI 集計による都道府県別の公共施設数シグナル",
+      "description": "OpenPOI公共施設カテゴリPOI集計による都道府県別の公共施設数シグナル",
       "inputSchema": {
         "type": "object",
         "properties": {

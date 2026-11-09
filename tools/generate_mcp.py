@@ -28,23 +28,32 @@ TOOL_PATHS = [
     ("jp_chains", "/poi/chains"),
     ("jp_aliveness", "/poi/aliveness"),
     ("jp_density", "/poi/density"),
-    ("jp_land_price", "/poi/land/price"),
     ("jp_energy_price", "/signals/energy/price"),
+    ("jp_land_price", "/poi/land/price"),
     ("jp_subsidy_award_rate", "/signals/subsidy/award-rate"),
+    ("jp_grant_deadline_alert", "/signals/grant/deadline"),
+    ("jp_gbizinfo_search", "/signals/gbizinfo"),
     ("jp_jma_weather", "/signals/jma/weather"),
     ("jp_boj_statistics", "/signals/boj/statistics"),
     ("jp_tourism_signal", "/signals/tourism"),
     ("jp_crime_statistics", "/signals/crime"),
     ("jp_facility_signal", "/signals/facility"),
-    ("jp_health", "/health"),
-    ("jp_catalog", "/poi"),
-    ("jp_history_diff", "/diff/{dataset}"),
 ]
 
-EXTRA_DESCRIPTIONS = {
-    "jp_health": "Service health and signal load status.",
-    "jp_catalog": "Dataset catalogue: every dataset with its endpoint, price in USD and tier.",
-}
+EXTRA_DESCRIPTIONS = {}
+
+# JP-16 canon ruling (2026-11-09, per audit 1.5): the npm tool set IS the
+# hosted canon set (functions/mcp-tools.json, 16 tools) - no extra tools.
+# The 2.0.0 package added jp_health / jp_catalog / jp_history_diff on top
+# of the canon; those three are REMOVED here:
+#   - jp_health / jp_catalog duplicate free discovery endpoints (/health,
+#     /poi) that are not MCP tools on the hosted server;
+#   - jp_history_diff (/diff/{dataset}) stays reachable over REST and the
+#     hosted MCP may add it later; until the canon carries it, the npm
+#     package does not advertise it.
+# check_drift.py watches the live REST spec vs SYNC.json (paths + catalog
+# hash), so a future canon change still surfaces as drift.
+REMOVED_IN_2_1 = ["jp_health", "jp_catalog", "jp_history_diff"]
 
 PAID_SUFFIX = (
     " [Paid: US${price:.2f} per call via x402 (USDC on Base) or a RapidAPI "
@@ -231,7 +240,7 @@ def main():
     canon_by_name = {t["name"]: t for t in canon["tools"]}
     pricing = spec["info"].get("x-pricing", {})
     mcp_prices = pricing.get("x402_per_call", {}).get("mcp", {})
-    paid_names = set(mcp_prices) | {"jp_history_diff"}
+    paid_names = set(mcp_prices)
 
     tools = []
     endpoints = {}
@@ -245,8 +254,6 @@ def main():
             base_desc = canon_tool["description"]
         elif name in EXTRA_DESCRIPTIONS:
             base_desc = EXTRA_DESCRIPTIONS[name]
-        elif name == "jp_history_diff":
-            base_desc = (op.get("summary", "") + ": " + op.get("description", "")).strip()
         else:
             print(f"ERROR: no description source for tool {name}", file=sys.stderr)
             return 1
@@ -264,6 +271,16 @@ def main():
             "name": name,
             "description": desc,
             "inputSchema": build_input_schema(op, canon_tool),
+            # MCP annotation hints (M8ven follow-up, folded into 2.1.0):
+            # every tool is a read-only GET against the API - it never
+            # mutates state, is safe to retry, and reaches an external
+            # service. Directory scorers (M8ven etc.) read these hints.
+            "annotations": {
+                "readOnlyHint": True,
+                "destructiveHint": False,
+                "idempotentHint": True,
+                "openWorldHint": True,
+            },
         })
         path_params = [seg[1:-1] for seg in path.split("/") if seg.startswith("{")]
         endpoints[name] = {

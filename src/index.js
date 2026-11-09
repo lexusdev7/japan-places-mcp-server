@@ -10,7 +10,7 @@
 
 const BASE = process.env.JAPAN_PLACES_BASE || "https://japan-places.local-connect-design.trade";
 
-const SERVER_INFO = { name: "japan-places", version: "2.0.0" };
+const SERVER_INFO = { name: "japan-places", version: "2.1.0" };
 
 const TOOLS = [
   {
@@ -27,6 +27,12 @@ const TOOLS = [
       "required": [
         "prefecture"
       ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -40,6 +46,12 @@ const TOOLS = [
         }
       },
       "required": []
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -55,6 +67,12 @@ const TOOLS = [
         }
       },
       "required": []
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -75,6 +93,12 @@ const TOOLS = [
         }
       },
       "required": []
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -95,11 +119,17 @@ const TOOLS = [
         }
       },
       "required": []
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
     "name": "jp_density",
-    "description": "都道府県×カテゴリの POI 密度 [Paid: US$0.05 per call via x402 (USDC on Base) or a RapidAPI Premium Datasets plan (PRO/ULTRA/MEGA). Without payment the API returns HTTP 402 Payment Required; this server holds no payment credentials and surfaces the 402 as a clean error.]",
+    "description": "都道府県×カテゴリのPOI密度 [Paid: US$0.05 per call via x402 (USDC on Base) or a RapidAPI Premium Datasets plan (PRO/ULTRA/MEGA). Without payment the API returns HTTP 402 Payment Required; this server holds no payment credentials and surfaces the 402 as a clean error.]",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -113,22 +143,12 @@ const TOOLS = [
         }
       },
       "required": []
-    }
-  },
-  {
-    "name": "jp_land_price",
-    "description": "都道府県別平均地価（国土数値情報 地価公示） [Paid: US$0.05 per call via x402 (USDC on Base) or a RapidAPI Premium Datasets plan (PRO/ULTRA/MEGA). Without payment the API returns HTTP 402 Payment Required; this server holds no payment credentials and surfaces the 402 as a clean error.]",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "prefecture_code": {
-          "type": "string",
-          "description": "都道府県コード（JIS X 0401 5桁）"
-        }
-      },
-      "required": [
-        "prefecture_code"
-      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -145,6 +165,34 @@ const TOOLS = [
       "required": [
         "area"
       ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "jp_land_price",
+    "description": "都道府県別平均地価（国土数値情報 地価公示） [Paid: US$0.05 per call via x402 (USDC on Base) or a RapidAPI Premium Datasets plan (PRO/ULTRA/MEGA). Without payment the API returns HTTP 402 Payment Required; this server holds no payment credentials and surfaces the 402 as a clean error.]",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prefecture_code": {
+          "type": "string",
+          "description": "都道府県コード（JIS X 0401 5桁）"
+        }
+      },
+      "required": [
+        "prefecture_code"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -166,6 +214,72 @@ const TOOLS = [
         "industry",
         "prefecture"
       ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "jp_grant_deadline_alert",
+    "description": "補助金締切・要件アラート [Paid: US$0.04 per call via x402 (USDC on Base) or a RapidAPI Premium Datasets plan (PRO/ULTRA/MEGA). Without payment the API returns HTTP 402 Payment Required; this server holds no payment credentials and surfaces the 402 as a clean error.]",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "industry": {
+          "type": "string",
+          "description": "業種名"
+        },
+        "prefecture": {
+          "type": "string",
+          "description": "都道府県名または2桁コード"
+        },
+        "status": {
+          "type": "string",
+          "description": "締切ステータス（open=締切前 / closed=締切後、リクエスト時点の境界で判定）"
+        },
+        "limit": {
+          "type": "string",
+          "description": "返す件数（既定50・最大500、締切昇順）"
+        }
+      },
+      "required": []
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "jp_gbizinfo_search",
+    "description": "gBizINFO法人登録データスナップショット（26,249法人）の検索 [Paid: US$0.03 per call via x402 (USDC on Base) or a RapidAPI Premium Datasets plan (PRO/ULTRA/MEGA). Without payment the API returns HTTP 402 Payment Required; this server holds no payment credentials and surfaces the 402 as a clean error.]",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string",
+          "description": "検索語（会社名部分一致・英語名大文字小文字区別なし・法人番号13桁完全一致）"
+        },
+        "prefecture": {
+          "type": "string",
+          "description": "都道府県名または2桁コード"
+        },
+        "limit": {
+          "type": "string",
+          "description": "返す件数（既定20・最大200）"
+        }
+      },
+      "required": []
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -182,6 +296,12 @@ const TOOLS = [
       "required": [
         "prefecture"
       ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -198,6 +318,12 @@ const TOOLS = [
       "required": [
         "series"
       ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -214,6 +340,12 @@ const TOOLS = [
       "required": [
         "prefecture"
       ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
@@ -230,11 +362,17 @@ const TOOLS = [
       "required": [
         "prefecture"
       ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   },
   {
     "name": "jp_facility_signal",
-    "description": "OpenPOI 公共施設カテゴリ POI 集計による都道府県別の公共施設数シグナル [Paid: US$0.03 per call via x402 (USDC on Base) or a RapidAPI Premium Datasets plan (PRO/ULTRA/MEGA). Without payment the API returns HTTP 402 Payment Required; this server holds no payment credentials and surfaces the 402 as a clean error.]",
+    "description": "OpenPOI公共施設カテゴリPOI集計による都道府県別の公共施設数シグナル [Paid: US$0.03 per call via x402 (USDC on Base) or a RapidAPI Premium Datasets plan (PRO/ULTRA/MEGA). Without payment the API returns HTTP 402 Payment Required; this server holds no payment credentials and surfaces the 402 as a clean error.]",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -246,45 +384,12 @@ const TOOLS = [
       "required": [
         "prefecture"
       ]
-    }
-  },
-  {
-    "name": "jp_health",
-    "description": "Service health and signal load status. [Free]",
-    "inputSchema": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    }
-  },
-  {
-    "name": "jp_catalog",
-    "description": "Dataset catalogue: every dataset with its endpoint, price in USD and tier. [Free]",
-    "inputSchema": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    }
-  },
-  {
-    "name": "jp_history_diff",
-    "description": "Time-series Diff: live データセットの日次スナップショットを比較し、added/removed/changed を返す。?since=YYYY-MM-DD で基準日を指定する（since 時点のスナップショットと、それ以前の直近スナップショットの差分）。対象は live データセットのみ（planned は差分不可）。 [Paid: gated by HTTP 402 (x402) or a RapidAPI Premium Datasets plan; the per-call price is stated in the API 402 response. This server holds no payment credentials and surfaces the 402 as a clean error.]",
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "dataset": {
-          "type": "string",
-          "description": "差分を取るデータセットID（live データセットのみ。例: energy_price）"
-        },
-        "since": {
-          "type": "string",
-          "description": "基準日（YYYY-MM-DD）。since 時点のスナップショットと、それ以前の直近スナップショットの差分を返す"
-        }
-      },
-      "required": [
-        "dataset",
-        "since"
-      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
     }
   }
 ];
@@ -326,14 +431,14 @@ const ENDPOINTS = {
     "price": 0.05,
     "pathParams": []
   },
-  "jp_land_price": {
-    "path": "/poi/land/price",
+  "jp_energy_price": {
+    "path": "/signals/energy/price",
     "paid": true,
     "price": 0.05,
     "pathParams": []
   },
-  "jp_energy_price": {
-    "path": "/signals/energy/price",
+  "jp_land_price": {
+    "path": "/poi/land/price",
     "paid": true,
     "price": 0.05,
     "pathParams": []
@@ -342,6 +447,18 @@ const ENDPOINTS = {
     "path": "/signals/subsidy/award-rate",
     "paid": true,
     "price": 0.05,
+    "pathParams": []
+  },
+  "jp_grant_deadline_alert": {
+    "path": "/signals/grant/deadline",
+    "paid": true,
+    "price": 0.04,
+    "pathParams": []
+  },
+  "jp_gbizinfo_search": {
+    "path": "/signals/gbizinfo",
+    "paid": true,
+    "price": 0.03,
     "pathParams": []
   },
   "jp_jma_weather": {
@@ -373,26 +490,6 @@ const ENDPOINTS = {
     "paid": true,
     "price": 0.03,
     "pathParams": []
-  },
-  "jp_health": {
-    "path": "/health",
-    "paid": false,
-    "price": null,
-    "pathParams": []
-  },
-  "jp_catalog": {
-    "path": "/poi",
-    "paid": false,
-    "price": null,
-    "pathParams": []
-  },
-  "jp_history_diff": {
-    "path": "/diff/{dataset}",
-    "paid": true,
-    "price": null,
-    "pathParams": [
-      "dataset"
-    ]
   }
 };
 
