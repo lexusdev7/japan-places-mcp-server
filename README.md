@@ -5,6 +5,7 @@ municipality census for 1,917 municipalities (2020 census), POI category counts
 for all 47 prefectures, station catchments, and 13 derived live signals for Japan.
 
 [![M8ven Verified](https://m8ven.ai/badge/mcp/lexusdev7/japan-places-mcp-server?variant=verified)](https://m8ven.ai/mcp/lexusdev7/japan-places-mcp-server?s=readme)
+[![M8ven Score](https://m8ven.ai/badge/mcp/lexusdev7-japan-places-mcp-server-137cn0?v=f982448cffdac1db089766e8d2476e99)](https://m8ven.ai/mcp/lexusdev7-japan-places-mcp-server-137cn0?s=readme)
 
 ## Install
 
